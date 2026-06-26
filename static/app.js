@@ -45,6 +45,9 @@ import spinnerModule from './js/spinner.js';
 import { initKeyboardShortcuts } from './js/keyboard-shortcuts.js';
 import { initSidebarLayout, syncRailSide } from './js/sidebar-layout.js';
 import { initSectionCollapse, initSectionDrag } from './js/section-management.js';
+// OPirate — feedback-loop UI (brief, deploy, self-heal, history)
+import { initBriefPanel } from './js/opirate/opirate-brief.js';
+import { initDeployPanel } from './js/opirate/opirate-deploy.js';
 
 const API_BASE = window.location.origin;
 window.themeModule = themeModule;
@@ -3366,6 +3369,12 @@ function startOdysseusApp() {
 
   // Initialize all event listeners
   try { initializeEventListeners(); } catch(e) { console.error('Event init error:', e); }
+
+  // OPirate — wire the feedback-loop UI panels.  Each init only activates if
+  // its container element is present in the DOM (no-op otherwise), so these
+  // calls are safe even on pages that don't include the panels.
+  try { initBriefPanel('opirate-brief-panel'); } catch(e) { console.error('OPirate brief init:', e); }
+  try { initDeployPanel('opirate-deploy-panel'); } catch(e) { console.error('OPirate deploy init:', e); }
 
   // Reveal the toolbar now that all toggle/overflow state is resolved
   // (hidden via inline style="visibility:hidden" in HTML to prevent FOUC)
