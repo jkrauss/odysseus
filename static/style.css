@@ -38480,6 +38480,65 @@ body.theme-frosted .modal {
   padding: 8px 0;
 }
 
+/* Running instances */
+.opirate-instances h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  color: var(--color-muted, #6c7086);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+#opirate-instance-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.opirate-instance-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--panel, #1e1e2e);
+  border: 1px solid var(--border, #45475a);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.opirate-instance-tile:hover {
+  border-color: var(--accent-muted, rgba(137, 180, 250, 0.4));
+  background: var(--panel-hover, rgba(137, 180, 250, 0.06));
+}
+
+.opirate-instance-tile strong {
+  color: var(--fg, #cdd6f4);
+  font-size: 0.95rem;
+  min-width: 100px;
+}
+
+.opirate-instance-domain {
+  color: var(--color-muted, #6c7086);
+  font-size: 0.8rem;
+  flex: 1;
+}
+
+.opirate-instance-status {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--panel, #313244);
+  color: var(--color-muted, #6c7086);
+}
+
+.opirate-status-running {
+  background: rgba(166, 227, 161, 0.15);
+  color: #a6e3a1;
+}
+
 .opirate-palette {
   display: flex;
   gap: 8px;

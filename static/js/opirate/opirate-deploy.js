@@ -19,6 +19,7 @@ const API_BASE = (typeof window !== 'undefined' && window.location) ? window.loc
 let _deployOpen = false;
 
 export function buildProjectsEndpoint() { return `${API_BASE}/api/opirate/projects`; }
+export function buildInstancesEndpoint() { return `${API_BASE}/api/opirate/instances`; }
 export function buildDeployEndpoint() { return `${API_BASE}/api/opirate/deploy`; }
 export function buildApproveEndpoint(tokenId) { return `${API_BASE}/api/opirate/approve/${tokenId}`; }
 export function buildDeployRunEndpoint(tokenId) { return `${API_BASE}/api/opirate/deploy/${tokenId}/run`; }
@@ -69,6 +70,10 @@ export function initDeployPanel(containerId) {
         </div>
       </div>
       <div id="opirate-terminal" class="opirate-terminal"></div>
+      <div id="opirate-instances" class="opirate-instances">
+        <h3>Running Instances</h3>
+        <div id="opirate-instance-items"></div>
+      </div>
     </div>
   `;
 
@@ -79,6 +84,7 @@ export function initDeployPanel(containerId) {
   });
   c.querySelector('#opirate-approval-cancel').addEventListener('click', () => { modal.style.display = 'none'; });
   _loadProjects(c);
+  _loadInstances(c);
 }
 
 async function _loadProjects(container) {
@@ -115,6 +121,31 @@ function _selectProject(container, name, manifest) {
   container.querySelectorAll('[data-opirate-action]').forEach(btn => {
     btn.disabled = false;
   });
+}
+
+async function _loadInstances(container) {
+  const itemsEl = container.querySelector('#opirate-instance-items');
+  if (!itemsEl) return;
+  try {
+    const res = await fetch(buildInstancesEndpoint());
+    const instances = await res.json();
+    if (!instances.length) {
+      itemsEl.innerHTML = '<div class="opirate-empty">No instance provisioned.</div>';
+      return;
+    }
+    itemsEl.innerHTML = '';
+    instances.forEach(inst => {
+      const tile = document.createElement('a');
+      tile.className = 'opirate-instance-tile';
+      tile.href = inst.url || '#';
+      tile.target = '_blank';
+      tile.rel = 'noopener';
+      tile.innerHTML = `<strong>${inst.project}</strong><span class="opirate-instance-domain">${inst.domain || 'unknown'}</span><span class="opirate-instance-status ${inst.status === 'running' ? 'opirate-status-running' : ''}">${inst.status}</span>`;
+      itemsEl.appendChild(tile);
+    });
+  } catch (e) {
+    itemsEl.innerHTML = `<div class="opirate-error">Failed to load instances: ${e.message}</div>`;
+  }
 }
 
 let _pendingToken = null;
