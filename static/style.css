@@ -38344,3 +38344,180 @@ body.theme-frosted .modal {
 .log-line-default {
   color: var(--fg, #9cdef2);
 }
+
+/* ── OPirate Panels ── */
+#opirate-brief-panel,
+#opirate-deploy-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  min-height: 0;
+}
+
+/* Brief / Dev Panel */
+.opirate-dev-panel {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.opirate-dev-panel textarea {
+  width: 100%;
+  min-height: 120px;
+  background: var(--panel, #1e1e2e);
+  color: var(--fg, #cdd6f4);
+  border: 1px solid var(--border, #45475a);
+  border-radius: 8px;
+  padding: 12px;
+  font: inherit;
+  resize: vertical;
+}
+
+.opirate-dev-panel textarea:focus {
+  outline: none;
+  border-color: var(--accent, #89b4fa);
+}
+
+.opirate-dev-panel button {
+  align-self: flex-start;
+  padding: 8px 20px;
+  background: var(--accent, #89b4fa);
+  color: var(--bg, #1e1e2e);
+  border: none;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.opirate-dev-panel button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.opirate-stream {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--panel, #1e1e2e);
+  border: 1px solid var(--border, #45475a);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.opirate-thinking { color: var(--color-muted, #6c7086); }
+.opirate-text { color: var(--fg, #cdd6f4); }
+.opirate-done { border-top: 1px solid var(--border, #45475a); margin: 8px 0; }
+.opirate-error { color: var(--red, #f38ba8); }
+
+/* Deploy Panel */
+.opirate-deploy {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.opirate-palette {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.opirate-palette button {
+  padding: 8px 18px;
+  background: var(--panel, #1e1e2e);
+  color: var(--fg, #cdd6f4);
+  border: 1px solid var(--border, #45475a);
+  border-radius: 6px;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.opirate-palette button:hover {
+  background: var(--accent-muted, rgba(137, 180, 250, 0.15));
+}
+
+/* Approval modal */
+.opirate-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.opirate-modal-content {
+  background: var(--panel, #1e1e2e);
+  border: 1px solid var(--border, #45475a);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 420px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.opirate-modal-content h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--fg, #cdd6f4);
+}
+
+.opirate-modal-content p {
+  margin: 0;
+  color: var(--color-muted, #6c7086);
+  font-size: 0.9rem;
+}
+
+.opirate-modal-content button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+#opirate-approval-confirm {
+  background: var(--accent, #89b4fa);
+  color: var(--bg, #1e1e2e);
+}
+
+#opirate-approval-cancel {
+  background: var(--panel, #313244);
+  color: var(--fg, #cdd6f4);
+}
+
+/* Terminal output */
+.opirate-terminal {
+  flex: 1;
+  overflow-y: auto;
+  background: #0d0d0d;
+  color: #c0caf5;
+  border: 1px solid var(--border, #45475a);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.opirate-terminal .opirate-error {
+  color: var(--red, #f38ba8);
+}

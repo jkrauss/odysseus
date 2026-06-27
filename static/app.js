@@ -46,8 +46,8 @@ import { initKeyboardShortcuts } from './js/keyboard-shortcuts.js';
 import { initSidebarLayout, syncRailSide } from './js/sidebar-layout.js';
 import { initSectionCollapse, initSectionDrag } from './js/section-management.js';
 // OPirate — feedback-loop UI (brief, deploy, self-heal, history)
-import { initBriefPanel } from './js/opirate/opirate-brief.js';
-import { initDeployPanel } from './js/opirate/opirate-deploy.js';
+import { initBriefPanel, toggleBriefPanel, closeBriefPanel } from './js/opirate/opirate-brief.js';
+import { initDeployPanel, toggleDeployPanel, closeDeployPanel } from './js/opirate/opirate-deploy.js';
 
 const API_BASE = window.location.origin;
 window.themeModule = themeModule;
@@ -917,6 +917,24 @@ function initializeEventListeners() {
       if (notesModule) {
         notesModule.togglePanel();
       }
+    });
+  }
+
+  // OPirate Brief (Dev Panel) tool button
+  const toolBriefBtn = el('tool-opirate-brief-btn');
+  if (toolBriefBtn) {
+    toolBriefBtn.addEventListener('click', () => {
+      closeDeployPanel();
+      toggleBriefPanel();
+    });
+  }
+
+  // OPirate Deploy tool button
+  const toolDeployBtn = el('tool-opirate-deploy-btn');
+  if (toolDeployBtn) {
+    toolDeployBtn.addEventListener('click', () => {
+      closeBriefPanel();
+      toggleDeployPanel();
     });
   }
   // Refresh notes due-reminder badge on load and every 5 minutes

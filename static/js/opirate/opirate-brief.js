@@ -10,11 +10,16 @@
  *   parsePiEvent(rawLine) → {type, delta} | null
  *   renderPiEvent(event, destElement) — append + scroll
  *   initBriefPanel(containerId) — full DOM wiring
+ *   openBriefPanel() — show the brief panel, hide chat
+ *   closeBriefPanel() — hide the brief panel, restore chat
+ *   toggleBriefPanel() — toggle between brief panel and chat
  */
 
 const API_BASE = (typeof window !== 'undefined' && window.location)
   ? window.location.origin
   : 'http://localhost:7000';
+
+let _briefOpen = false;
 
 
 /** Build the POST URL for the /api/opirate/brief endpoint. */
@@ -178,4 +183,33 @@ export function initBriefPanel(containerId) {
       sendBtn.click();
     }
   });
+}
+
+export function openBriefPanel() {
+  if (typeof document === 'undefined') return;
+  const panel = document.getElementById('opirate-brief-panel');
+  const chat = document.getElementById('chat-container');
+  if (!panel || !chat) return;
+  chat.style.display = 'none';
+  panel.style.display = '';
+  _briefOpen = true;
+  const btn = document.getElementById('tool-opirate-brief-btn');
+  if (btn) btn.classList.add('active');
+}
+
+export function closeBriefPanel() {
+  if (typeof document === 'undefined') return;
+  const panel = document.getElementById('opirate-brief-panel');
+  const chat = document.getElementById('chat-container');
+  if (!panel || !chat) return;
+  panel.style.display = 'none';
+  chat.style.display = '';
+  _briefOpen = false;
+  const btn = document.getElementById('tool-opirate-brief-btn');
+  if (btn) btn.classList.remove('active');
+}
+
+export function toggleBriefPanel() {
+  if (_briefOpen) closeBriefPanel();
+  else openBriefPanel();
 }
