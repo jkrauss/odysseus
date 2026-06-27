@@ -25,7 +25,10 @@ export function buildDeployRunEndpoint(tokenId) { return `${API_BASE}/api/opirat
 export function buildManifestEndpoint(project) { return `${API_BASE}/api/opirate/manifest/${project}`; }
 export function buildActionEndpoint() { return `${API_BASE}/api/opirate/action`; }
 
-export function parseDeployLine(line) { return line; }
+export function parseDeployLine(line) {
+  // Strip ANSI escape codes (from tofu/terraform/docker coloured output)
+  return line.replace(/\x1b\[[0-9;]*m/g, '').replace(/\u001b\[[0-9;]*m/g, '');
+}
 
 export function formatCost(amount) {
   if (amount == null) return 'Cost unknown (requires approval)';
