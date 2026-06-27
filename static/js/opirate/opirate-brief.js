@@ -30,7 +30,17 @@ export function buildBriefEndpoint(workspaceId, sessionDir) {
 }
 
 
-/** Parse a single JSON line from the Pi RPC SSE stream into a structured event. */
+/** Parse a single JSON line from the Pi RPC SSE stream into a structured event.
+ *
+ * Wire format (Pi v0.81+ RPC mode, observed 2026-06-27):
+ *   { "type": "message_update",
+ *     "assistantMessageEvent": { "type": "thinking_delta"|"text_delta", "delta": "..." } }
+ *   { "type": "turn_end" }                              // end of one assistant turn
+ *   { "type": "agent_end" }                             // end of the whole session
+ *
+ * Anything else returns null — renderPiEvent only consumes the three
+ * shapes the panel can actually show.
+ */
 export function parsePiEvent(rawLine) {
   if (!rawLine || !rawLine.trim()) return null;
 
@@ -40,14 +50,18 @@ export function parsePiEvent(rawLine) {
   } catch (_) {
     return null;
   }
-  const eventType = data.event;
-  if (eventType === 'thinking_delta') {
-    return { type: 'thinking', delta: data.delta || '' };
+  const outerType = data.type;
+  const inner = data.assistantMessageEvent;
+  if (outerType === 'message_update' && inner && typeof inner === 'object') {
+    if (inner.type === 'thinking_delta') {
+      return { type: 'thinking', delta: inner.delta || '' };
+    }
+    if (inner.type === 'text_delta') {
+      return { type: 'text', delta: inner.delta || '' };
+    }
+    return null;
   }
-  if (eventType === 'text_delta') {
-    return { type: 'text', delta: data.delta || '' };
-  }
-  if (eventType === 'message_stop') {
+  if (outerType === 'turn_end' || outerType === 'agent_end') {
     return { type: 'stop' };
   }
   return null;
