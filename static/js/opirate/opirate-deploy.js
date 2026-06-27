@@ -1,7 +1,22 @@
 /**
  * opirate-deploy.js — Deploy trigger + approval modal + live terminal (S2 + S3).
+ *
+ * Exports:
+ *   buildDeployEndpoint() → URL string
+ *   buildApproveEndpoint(tokenId) → URL string
+ *   buildDeployRunEndpoint(tokenId) → URL string
+ *   buildManifestEndpoint(project) → URL string
+ *   buildActionEndpoint() → URL string
+ *   parseDeployLine(line) → string
+ *   formatCost(amount) → string
+ *   initDeployPanel(containerId) — full DOM wiring
+ *   openDeployPanel() — show the deploy panel, hide chat
+ *   closeDeployPanel() — hide the deploy panel, restore chat
+ *   toggleDeployPanel() — toggle between deploy panel and chat
  */
 const API_BASE = (typeof window !== 'undefined' && window.location) ? window.location.origin : 'http://localhost:7000';
+
+let _deployOpen = false;
 
 export function buildDeployEndpoint() { return `${API_BASE}/api/opirate/deploy`; }
 export function buildApproveEndpoint(tokenId) { return `${API_BASE}/api/opirate/approve/${tokenId}`; }
@@ -104,4 +119,33 @@ async function _runStream(url, body, terminal) {
   } catch (e) {
     terminal.innerHTML += `<div class="opirate-error">${e.message}</div>`;
   }
+}
+
+export function openDeployPanel() {
+  if (typeof document === 'undefined') return;
+  const panel = document.getElementById('opirate-deploy-panel');
+  const chat = document.getElementById('chat-container');
+  if (!panel || !chat) return;
+  chat.style.display = 'none';
+  panel.style.display = '';
+  _deployOpen = true;
+  const btn = document.getElementById('tool-opirate-deploy-btn');
+  if (btn) btn.classList.add('active');
+}
+
+export function closeDeployPanel() {
+  if (typeof document === 'undefined') return;
+  const panel = document.getElementById('opirate-deploy-panel');
+  const chat = document.getElementById('chat-container');
+  if (!panel || !chat) return;
+  panel.style.display = 'none';
+  chat.style.display = '';
+  _deployOpen = false;
+  const btn = document.getElementById('tool-opirate-deploy-btn');
+  if (btn) btn.classList.remove('active');
+}
+
+export function toggleDeployPanel() {
+  if (_deployOpen) closeDeployPanel();
+  else openDeployPanel();
 }
