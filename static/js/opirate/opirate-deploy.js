@@ -25,6 +25,7 @@ export function buildApproveEndpoint(tokenId) { return `${API_BASE}/api/opirate/
 export function buildDeployRunEndpoint(tokenId) { return `${API_BASE}/api/opirate/deploy/${tokenId}/run`; }
 export function buildManifestEndpoint(project) { return `${API_BASE}/api/opirate/manifest/${project}`; }
 export function buildActionEndpoint() { return `${API_BASE}/api/opirate/action`; }
+export function buildActionRunEndpoint(tokenId) { return `${API_BASE}/api/opirate/action/${tokenId}/run`; }
 
 export function parseDeployLine(line) {
   // Strip ANSI escape codes (from tofu/terraform/docker coloured output)
@@ -156,7 +157,28 @@ async function _handleAction(action, terminal, modal) {
     _runStream(buildActionEndpoint(), { action, project }, terminal);
     return;
   }
-  // Cost-bearing: fetch manifest, then show approval modal.
+  if (action === 'deprovision') {
+    // Deprovision goes through the action endpoint (maps to Hermine 'destroy').
+    try {
+      const resp = await (await fetch(buildActionEndpoint(), {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ action, project }),
+      })).json();
+      const token_id = resp.token_id;
+      document.getElementById('opirate-approval-project').textContent = `Project: ${project} — Deprovision (destroy VPS)`;
+      document.getElementById('opirate-approval-cost').textContent = 'This will permanently destroy the staging VPS.';
+      modal.style.display = 'flex';
+      document.getElementById('opirate-approval-confirm').onclick = async () => {
+        modal.style.display = 'none';
+        await fetch(buildApproveEndpoint(token_id), { method: 'POST' });
+        _runStream(buildActionRunEndpoint(token_id), null, terminal);
+      };
+    } catch (e) {
+      terminal.innerHTML = `<div class="opirate-error">Deprovision error: ${e.message}</div>`;
+    }
+    return;
+  }
+  // Provision: fetch manifest, then show approval modal, then deploy.
   try {
     const m = await (await fetch(buildManifestEndpoint(project))).json();
     const cost = m.cost_estimate;
