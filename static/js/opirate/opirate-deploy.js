@@ -18,6 +18,7 @@ const API_BASE = (typeof window !== 'undefined' && window.location) ? window.loc
 
 let _deployOpen = false;
 
+export function buildProjectsEndpoint() { return `${API_BASE}/api/opirate/projects`; }
 export function buildDeployEndpoint() { return `${API_BASE}/api/opirate/deploy`; }
 export function buildApproveEndpoint(tokenId) { return `${API_BASE}/api/opirate/approve/${tokenId}`; }
 export function buildDeployRunEndpoint(tokenId) { return `${API_BASE}/api/opirate/deploy/${tokenId}/run`; }
@@ -38,16 +39,22 @@ export const STATUS_LABELS = { provision: 'Provision', deprovision: 'Deprovision
  * initDeployPanel — wires the deploy trigger, approval modal, and streaming
  * terminal into the DOM inside `containerId`.
  */
+let _selectedProject = null;
+
 export function initDeployPanel(containerId) {
   if (typeof document === 'undefined') return;
   const c = document.getElementById(containerId);
   if (!c) return;
   c.innerHTML = `
     <div class="opirate-deploy">
+      <div id="opirate-project-list" class="opirate-project-list">
+        <h3>Projects</h3>
+        <div id="opirate-project-items"></div>
+      </div>
       <div class="opirate-palette">
-        <button data-opirate-action="provision">Provision</button>
-        <button data-opirate-action="deprovision">Deprovision</button>
-        <button data-opirate-action="status">Status</button>
+        <button data-opirate-action="provision" disabled>Provision</button>
+        <button data-opirate-action="deprovision" disabled>Deprovision</button>
+        <button data-opirate-action="status" disabled>Status</button>
       </div>
       <div id="opirate-approval-modal" class="opirate-modal" style="display:none">
         <div class="opirate-modal-content">
@@ -68,12 +75,49 @@ export function initDeployPanel(containerId) {
     btn.addEventListener('click', () => _handleAction(btn.dataset.opirateAction, terminal, modal));
   });
   c.querySelector('#opirate-approval-cancel').addEventListener('click', () => { modal.style.display = 'none'; });
+  _loadProjects(c);
+}
+
+async function _loadProjects(container) {
+  const itemsEl = container.querySelector('#opirate-project-items');
+  if (!itemsEl) return;
+  try {
+    const res = await fetch(buildProjectsEndpoint());
+    const projects = await res.json();
+    if (!projects.length) {
+      itemsEl.innerHTML = '<div class="opirate-empty">No projects found.</div>';
+      return;
+    }
+    itemsEl.innerHTML = '';
+    projects.forEach(p => {
+      const name = p.project_name || p.filename || 'unknown';
+      const cost = formatCost(p.cost_estimate);
+      const card = document.createElement('div');
+      card.className = 'opirate-project-card';
+      card.dataset.project = name;
+      card.innerHTML = `<strong>${name}</strong><span class="opirate-project-cost">${cost}</span>`;
+      card.addEventListener('click', () => _selectProject(container, name, p));
+      itemsEl.appendChild(card);
+    });
+  } catch (e) {
+    itemsEl.innerHTML = `<div class="opirate-error">Failed to load projects: ${e.message}</div>`;
+  }
+}
+
+function _selectProject(container, name, manifest) {
+  _selectedProject = name;
+  container.querySelectorAll('.opirate-project-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.project === name);
+  });
+  container.querySelectorAll('[data-opirate-action]').forEach(btn => {
+    btn.disabled = false;
+  });
 }
 
 let _pendingToken = null;
 
 async function _handleAction(action, terminal, modal) {
-  const project = document.querySelector('[data-workspace-id]')?.dataset?.workspaceId || 'default';
+  const project = _selectedProject || document.querySelector('[data-workspace-id]')?.dataset?.workspaceId || 'default';
   if (action === 'status') {
     _runStream(buildActionEndpoint(), { action, project }, terminal);
     return;

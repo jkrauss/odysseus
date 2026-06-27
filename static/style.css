@@ -38427,6 +38427,59 @@ body.theme-frosted .modal {
   height: 100%;
 }
 
+/* Project list */
+.opirate-project-list h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  color: var(--color-muted, #6c7086);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+#opirate-project-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.opirate-project-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--panel, #1e1e2e);
+  border: 1px solid var(--border, #45475a);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.opirate-project-card:hover {
+  border-color: var(--accent-muted, rgba(137, 180, 250, 0.4));
+  background: var(--panel-hover, rgba(137, 180, 250, 0.06));
+}
+
+.opirate-project-card.selected {
+  border-color: var(--accent, #89b4fa);
+  background: var(--accent-muted, rgba(137, 180, 250, 0.1));
+}
+
+.opirate-project-card strong {
+  color: var(--fg, #cdd6f4);
+  font-size: 0.95rem;
+}
+
+.opirate-project-cost {
+  color: var(--color-muted, #6c7086);
+  font-size: 0.8rem;
+}
+
+.opirate-empty {
+  color: var(--color-muted, #6c7086);
+  font-style: italic;
+  padding: 8px 0;
+}
+
 .opirate-palette {
   display: flex;
   gap: 8px;
