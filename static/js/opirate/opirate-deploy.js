@@ -156,7 +156,22 @@ let _deployContainer = null;  // ref for _loadInstances refresh
 async function _handleAction(action, terminal, modal) {
   const project = _selectedProject || document.querySelector('[data-workspace-id]')?.dataset?.workspaceId || 'default';
   if (action === 'status') {
-    _runStream(buildActionEndpoint(), { action, project }, terminal);
+    try {
+      const res = await fetch(buildInstancesEndpoint());
+      const instances = await res.json();
+      terminal.innerHTML = '';
+      if (!instances.length) {
+        terminal.innerHTML = '<div class="opirate-empty">No instances running.</div>';
+      } else {
+        instances.forEach(inst => {
+          const div = document.createElement('div');
+          div.textContent = `${inst.project}: ${inst.status} (${inst.ipv4}) — ${inst.url}`;
+          terminal.appendChild(div);
+        });
+      }
+    } catch (e) {
+      terminal.innerHTML = `<div class="opirate-error">Status error: ${e.message}</div>`;
+    }
     return;
   }
   if (action === 'deprovision') {
