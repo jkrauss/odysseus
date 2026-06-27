@@ -85,6 +85,7 @@ export function initDeployPanel(containerId) {
   });
   c.querySelector('#opirate-approval-cancel').addEventListener('click', () => { modal.style.display = 'none'; });
   _loadProjects(c);
+  _deployContainer = c;
   _loadInstances(c);
 }
 
@@ -150,6 +151,7 @@ async function _loadInstances(container) {
 }
 
 let _pendingToken = null;
+let _deployContainer = null;  // ref for _loadInstances refresh
 
 async function _handleAction(action, terminal, modal) {
   const project = _selectedProject || document.querySelector('[data-workspace-id]')?.dataset?.workspaceId || 'default';
@@ -171,7 +173,7 @@ async function _handleAction(action, terminal, modal) {
       document.getElementById('opirate-approval-confirm').onclick = async () => {
         modal.style.display = 'none';
         await fetch(buildApproveEndpoint(token_id), { method: 'POST' });
-        _runStream(buildActionRunEndpoint(token_id), null, terminal);
+        _runStream(buildActionRunEndpoint(token_id), null, terminal, () => _refreshInstances());
       };
     } catch (e) {
       terminal.innerHTML = `<div class="opirate-error">Deprovision error: ${e.message}</div>`;
@@ -187,17 +189,20 @@ async function _handleAction(action, terminal, modal) {
     modal.style.display = 'flex';
     document.getElementById('opirate-approval-confirm').onclick = async () => {
       modal.style.display = 'none';
-      // Request approval token, then run.
       const t = await (await fetch(buildDeployEndpoint(), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({project, manifest: m}) })).json();
       await fetch(buildApproveEndpoint(t.token_id), { method:'POST' });
-      _runStream(buildDeployRunEndpoint(t.token_id), null, terminal);
+      _runStream(buildDeployRunEndpoint(t.token_id), null, terminal, () => _refreshInstances());
     };
   } catch (e) {
     terminal.innerHTML = `<div class="opirate-error">Deploy error: ${e.message}</div>`;
   }
 }
 
-async function _runStream(url, body, terminal) {
+function _refreshInstances() {
+  if (_deployContainer) _loadInstances(_deployContainer);
+}
+
+async function _runStream(url, body, terminal, onDone) {
   terminal.innerHTML = '';
   try {
     const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: body ? JSON.stringify(body) : null });
@@ -219,6 +224,7 @@ async function _runStream(url, body, terminal) {
   } catch (e) {
     terminal.innerHTML += `<div class="opirate-error">${e.message}</div>`;
   }
+  if (onDone) onDone();
 }
 
 export function openDeployPanel() {
