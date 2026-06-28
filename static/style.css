@@ -38539,6 +38539,37 @@ body.theme-frosted .modal {
   color: #a6e3a1;
 }
 
+/* Deployment history */
+.opirate-history h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  color: var(--color-muted, #6c7086);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+#opirate-history-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.opirate-history-row {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--panel, #1e1e2e);
+  color: var(--fg, #cdd6f4);
+}
+
+.opirate-history-fail {
+  color: var(--red, #f38ba8);
+  background: rgba(243, 139, 168, 0.08);
+}
+
 .opirate-palette {
   display: flex;
   gap: 8px;

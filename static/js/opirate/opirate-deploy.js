@@ -26,6 +26,7 @@ export function buildDeployRunEndpoint(tokenId) { return `${API_BASE}/api/opirat
 export function buildManifestEndpoint(project) { return `${API_BASE}/api/opirate/manifest/${project}`; }
 export function buildActionEndpoint() { return `${API_BASE}/api/opirate/action`; }
 export function buildActionRunEndpoint(tokenId) { return `${API_BASE}/api/opirate/action/${tokenId}/run`; }
+export function buildHistoryEndpoint(project) { return `${API_BASE}/api/opirate/timeline/${encodeURIComponent(project)}`; }
 
 export function parseDeployLine(line) {
   // Strip ANSI escape codes (from tofu/terraform/docker coloured output)
@@ -75,6 +76,10 @@ export function initDeployPanel(containerId) {
         <h3>Running Instances</h3>
         <div id="opirate-instance-items"></div>
       </div>
+      <div id="opirate-history" class="opirate-history">
+        <h3>Deployment History</h3>
+        <div id="opirate-history-items"></div>
+      </div>
     </div>
   `;
 
@@ -123,6 +128,7 @@ function _selectProject(container, name, manifest) {
   container.querySelectorAll('[data-opirate-action]').forEach(btn => {
     btn.disabled = false;
   });
+  _loadHistory(container, name);
 }
 
 async function _loadInstances(container) {
@@ -147,6 +153,32 @@ async function _loadInstances(container) {
     });
   } catch (e) {
     itemsEl.innerHTML = `<div class="opirate-error">Failed to load instances: ${e.message}</div>`;
+  }
+}
+
+async function _loadHistory(container, project) {
+  const itemsEl = container.querySelector('#opirate-history-items');
+  if (!itemsEl) return;
+  try {
+    const res = await fetch(buildHistoryEndpoint(project));
+    const events = await res.json();
+    if (!events.length) {
+      itemsEl.innerHTML = '<div class="opirate-empty">No deployment history.</div>';
+      return;
+    }
+    itemsEl.innerHTML = '';
+    // Show newest first
+    events.slice().reverse().forEach(ev => {
+      const row = document.createElement('div');
+      row.className = 'opirate-history-row' + (ev.result === 'fail' ? ' opirate-history-fail' : '');
+      const ts = ev.timestamp ? new Date(ev.timestamp).toLocaleString() : 'unknown';
+      const status = ev.result === 'success' ? '✓' : '✗';
+      const err = ev.error ? ` — ${ev.error}` : '';
+      row.textContent = `[${ts}] ${ev.action} ${status}${err}`;
+      itemsEl.appendChild(row);
+    });
+  } catch (e) {
+    itemsEl.innerHTML = `<div class="opirate-error">Failed to load history: ${e.message}</div>`;
   }
 }
 
