@@ -20,6 +20,9 @@ const API_BASE = (typeof window !== 'undefined' && window.location)
   : 'http://localhost:7000';
 
 let _briefOpen = false;
+let _loopMode = false;
+
+export function buildLoopEndpoint() { return `${API_BASE}/api/opirate/loop`; }
 
 
 /** Build the POST URL for the /api/opirate/brief endpoint. */
@@ -126,6 +129,10 @@ export function initBriefPanel(containerId) {
   // Build a minimal Dev Panel inside the container.
   container.innerHTML = `
     <div class="opirate-dev-panel">
+      <div class="opirate-mode-toggle">
+        <button id="opirate-mode-brief" class="opirate-mode-btn active">Brief</button>
+        <button id="opirate-mode-loop" class="opirate-mode-btn">Feedback Loop</button>
+      </div>
       <textarea id="opirate-brief-input" placeholder="Describe what you want Pi to do..."></textarea>
       <button id="opirate-brief-send">Send</button>
       <div id="opirate-brief-stream" class="opirate-stream"></div>
@@ -135,26 +142,50 @@ export function initBriefPanel(containerId) {
   const input = container.querySelector('#opirate-brief-input');
   const sendBtn = container.querySelector('#opirate-brief-send');
   const stream = container.querySelector('#opirate-brief-stream');
+  const modeBrief = container.querySelector('#opirate-mode-brief');
+  const modeLoop = container.querySelector('#opirate-mode-loop');
   if (!input || !sendBtn || !stream) return;
+
+  // Mode toggle
+  if (modeBrief && modeLoop) {
+    modeBrief.addEventListener('click', () => {
+      _loopMode = false;
+      modeBrief.classList.add('active');
+      modeLoop.classList.remove('active');
+      input.placeholder = 'Describe what you want Pi to do...';
+      sendBtn.textContent = 'Send';
+    });
+    modeLoop.addEventListener('click', () => {
+      _loopMode = true;
+      modeLoop.classList.add('active');
+      modeBrief.classList.remove('active');
+      input.placeholder = 'Describe the feature to build (full feedback loop)...';
+      sendBtn.textContent = 'Run Loop';
+    });
+  }
 
   sendBtn.addEventListener('click', async () => {
     const prompt = input.value.trim();
     if (!prompt) return;
 
     sendBtn.disabled = true;
-    sendBtn.textContent = 'Sending...';
+    sendBtn.textContent = _loopMode ? 'Running...' : 'Sending...';
     stream.innerHTML = '';
 
-    // Determine workspace from page context.
     const wsEl = document.querySelector('[data-workspace-id]');
     const workspaceId = wsEl ? wsEl.dataset.workspaceId : 'default';
-    const url = `${API_BASE}/api/opirate/brief`;
+
+    // Choose endpoint based on mode
+    const url = _loopMode ? buildLoopEndpoint() : `${API_BASE}/api/opirate/brief`;
+    const body = _loopMode
+      ? JSON.stringify({ brief: prompt })
+      : JSON.stringify({ workspace_id: workspaceId, prompt });
 
     try {
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspace_id: workspaceId, prompt }),
+        body: body,
       });
 
       if (!res.ok) {
@@ -176,15 +207,27 @@ export function initBriefPanel(containerId) {
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
           const json = line.slice(6); // strip "data: " prefix
-          const event = parsePiEvent(json);
-          if (event) renderPiEvent(event, stream);
+          if (_loopMode) {
+            // Loop mode: deploy-style output (plain text lines)
+            let text;
+            try { text = JSON.parse(json).line || json; } catch (_) { text = json; }
+            const div = document.createElement('div');
+            div.textContent = text;
+            div.className = 'opirate-text';
+            stream.appendChild(div);
+            stream.scrollTop = stream.scrollHeight;
+          } else {
+            // Brief mode: Pi events
+            const event = parsePiEvent(json);
+            if (event) renderPiEvent(event, stream);
+          }
         }
       }
     } catch (err) {
       stream.innerHTML = `<div class="opirate-error">Stream error: ${err.message}</div>`;
     } finally {
       sendBtn.disabled = false;
-      sendBtn.textContent = 'Send';
+      sendBtn.textContent = _loopMode ? 'Run Loop' : 'Send';
       input.value = '';
       input.focus();
     }

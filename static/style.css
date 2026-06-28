@@ -38381,6 +38381,34 @@ body.theme-frosted .modal {
   border-color: var(--accent, #89b4fa);
 }
 
+.opirate-mode-toggle {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.opirate-mode-btn {
+  padding: 6px 14px;
+  background: var(--panel, #1e1e2e);
+  color: var(--color-muted, #6c7086);
+  border: 1px solid var(--border, #45475a);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.opirate-mode-btn.active {
+  background: var(--accent, #89b4fa);
+  color: var(--bg, #1e1e2e);
+  border-color: var(--accent, #89b4fa);
+}
+
+.opirate-mode-btn:hover:not(.active) {
+  border-color: var(--accent-muted, rgba(137, 180, 250, 0.4));
+}
+
 .opirate-dev-panel button {
   align-self: flex-start;
   padding: 8px 20px;
