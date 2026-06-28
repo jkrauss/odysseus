@@ -264,6 +264,8 @@ async function _runStream(url, body, terminal, onDone) {
         if (!l.startsWith('data: ')) continue;
         const j = l.slice(6);
         let text; try { text = JSON.parse(j).line || j; } catch (_) { text = j; }
+        // Sanitize: redact GitHub tokens from output
+        text = text.replace(/ghp_[A-Za-z0-9]{36}/g, 'ghp_***REDACTED***').replace(/oauth2:[^@]+@/g, 'oauth2:***@');
         const div = document.createElement('div'); div.textContent = parseDeployLine(text); terminal.appendChild(div);
         terminal.scrollTop = terminal.scrollHeight;
       }
